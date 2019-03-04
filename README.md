@@ -9,4 +9,5 @@ Update the CODEOWNERS file from Definitely Typed
 5. Commit that file and merge it with a PR on DefinitelyTyped
 
 
-TODO: Automate steps 1-5 and run them once a week or more.
+NOTE: This script is so simple that it is now part of Definitely Typed.
+Try `npm run update-codeowners` there.
