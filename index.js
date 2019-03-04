@@ -1,22 +1,21 @@
 const { AllPackages, getDefinitelyTyped, logUncaughtErrors, loggerWithErrors,
-        parseDefinitions, parseNProcesses } = require("types-publisher");
+        parseDefinitions, parseNProcesses, clean } = require("types-publisher");
 const { writeFile } = require("fs-extra");
 
 logUncaughtErrors(main());
 
 async function main() {
-    const options = { definitelyTypedPath: "../DefinitelyTyped", progress: true, parseInParallel: true };
+    const options = { definitelyTypedPath: "../DefinitelyTyped", progress: false, parseInParallel: true };
     const log = loggerWithErrors()[0];
 
-    await parseDefinitions(
-        await getDefinitelyTyped(options, log),
-        { nProcesses: parseNProcesses(), definitelyTypedPath: "../DefinitelyTyped" },
-        log);
-    const allPackages = await AllPackages.read(await getDefinitelyTyped(options, log));
+    clean();
+    const dt = await getDefinitelyTyped(options, log);
+    await parseDefinitions(dt, { nProcesses: parseNProcesses(), definitelyTypedPath: "../DefinitelyTyped" }, log);
+    const allPackages = await AllPackages.read(dt);
     const typings = allPackages.allTypings();
     const maxPathLen = Math.max(...typings.map(t => t.subDirectoryPath.length));
-    const lines = mapDefined(typings, t => getEntry(t, maxPathLen));
-    await writeFile([options.definitelyTypedPath, ".github", "CODEOWNERS"].join("/"), `${header}\n\n${lines.join("\n")}\n`, { encoding: "utf-8" });
+    const entries = mapDefined(typings, t => getEntry(t, maxPathLen));
+    await writeFile([options.definitelyTypedPath, ".github", "CODEOWNERS"].join("/"), `${header}\n\n${entries.join("\n")}\n`, { encoding: "utf-8" });
 }
 
 const header =
